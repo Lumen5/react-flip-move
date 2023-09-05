@@ -460,15 +460,16 @@ class FlipMove extends Component<ConvertedProps, FlipMoveState> {
       });
     });
 
-    this.bindTransitionEndHandler(child);
+    this.bindTransitionEndHandler(child, index);
   }
 
-  bindTransitionEndHandler(child: ChildData) {
+  bindTransitionEndHandler(child: ChildData, index: number) {
     const { domNode } = this.getChildData(getKey(child));
     if (!domNode) {
       return;
     }
 
+    let called = false;
     // The onFinish callback needs to be bound to the transitionEnd event.
     // We also need to unbind it when the transition completes, so this ugly
     // inline function is required (we need it here so it closes over
@@ -478,6 +479,8 @@ class FlipMove extends Component<ConvertedProps, FlipMoveState> {
       // but on a nested transition (eg. a hover effect). Ignore these cases.
       if (ev.target !== domNode) return;
 
+      called = true;
+
       // Remove the 'transition' inline style we added. This is cleanup.
       domNode.style.transition = '';
 
@@ -485,6 +488,7 @@ class FlipMove extends Component<ConvertedProps, FlipMoveState> {
       this.triggerFinishHooks(child, domNode);
 
       domNode.removeEventListener(transitionEnd, transitionEndHandler);
+      window.clearTimeout(timeoutId);
 
       if (child.leaving) {
         this.removeChildData(getKey(child));
@@ -492,6 +496,21 @@ class FlipMove extends Component<ConvertedProps, FlipMoveState> {
     };
 
     domNode.addEventListener(transitionEnd, transitionEndHandler);
+
+    let { delay, duration } = props;
+    const { staggerDurationBy, staggerDelayBy, easing } = props;
+
+    delay += index * staggerDelayBy;
+    duration += index * staggerDurationBy;
+
+    const timeoutId = window.setTimeout(() => {
+      if (!called) {
+        const event = new Event();
+        event.target = domNode;
+
+        transitionEndHandler(event);
+      }
+    }, delay + duration);
   }
 
   triggerFinishHooks(child: ChildData, domNode: HTMLElement) {
