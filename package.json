@@ -1,5 +1,5 @@
 {
-  "name": "@Lumen5/react-flip-move",
+  "name": "lumen5-react-flip-move",
   "version": "3.0.6",
   "description": "Effortless animation between DOM changes (eg. list reordering) using the FLIP technique.",
   "main": "dist/react-flip-move.cjs.js",
