@@ -470,6 +470,7 @@ class FlipMove extends Component<ConvertedProps, FlipMoveState> {
     }
 
     let called = false;
+    let timeoutId;
     // The onFinish callback needs to be bound to the transitionEnd event.
     // We also need to unbind it when the transition completes, so this ugly
     // inline function is required (we need it here so it closes over
@@ -497,18 +498,16 @@ class FlipMove extends Component<ConvertedProps, FlipMoveState> {
 
     domNode.addEventListener(transitionEnd, transitionEndHandler);
 
-    let { delay, duration } = props;
-    const { staggerDurationBy, staggerDelayBy, easing } = props;
+    let { delay, duration } = this.props;
+    const { staggerDurationBy, staggerDelayBy } = this.props;
 
     delay += index * staggerDelayBy;
     duration += index * staggerDurationBy;
 
-    const timeoutId = window.setTimeout(() => {
+    timeoutId = window.setTimeout(() => {
       if (!called) {
-        const event = new Event();
-        event.target = domNode;
-
-        transitionEndHandler(event);
+        const event = new Event(transitionEnd);
+        domNode.dispatchEvent(event);
       }
     }, delay + duration);
   }
